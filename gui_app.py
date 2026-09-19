@@ -229,45 +229,91 @@ class App:
     # ---------------- 样式 ----------------
     def _style(self):
         s = ttk.Style()
-        for theme in ("vista", "winnative", "clam"):
-            try:
-                s.theme_use(theme)
-                break
-            except tk.TclError:
-                continue
+        # 必须用 clam（Tk 自绘）。
+        # Windows 的 vista/winnative 走系统原生绘制，会忽略 background 配置，
+        # 主按钮会保持浅灰白底，而文字色是白色 —— 结果白底白字完全看不清。
+        s.theme_use("clam")
 
         f = ufonts.font
         s.configure(".", font=f(10), background=C_BG, foreground=C_TEXT)
-        s.configure("TFrame", background=C_BG)
+
+        # 容器与文字
+        s.configure("TFrame", background=C_BG, borderwidth=0)
+        s.configure("Card.TFrame", background=C_CARD, borderwidth=0)
         s.configure("TLabel", background=C_BG, foreground=C_TEXT, font=f(10))
         s.configure("Muted.TLabel", background=C_BG, foreground=C_MUTED, font=f(9))
-        s.configure("Title.TLabel", background=C_BG, foreground=C_TEXT, font=f(15, "bold"))
-        s.configure("Sub.TLabel", background=C_BG, foreground=C_MUTED, font=f(9))
-        s.configure("TButton", font=f(10), padding=(10, 6))
-        s.configure("Primary.TButton", font=f(10, "bold"), padding=(16, 8))
-        s.configure("TCheckbutton", background=C_BG, foreground=C_TEXT, font=f(10))
-        s.configure("TEntry", font=f(10), padding=4)
-        s.configure("TSpinbox", font=f(10), padding=3)
+        s.configure("TSeparator", background="#dcdfe4")
 
+        # 普通按钮：浅底深字，对比清晰
+        s.configure("TButton",
+                    font=f(10), padding=(12, 7),
+                    background="#e9ebef", foreground=C_TEXT,
+                    bordercolor="#c9ccd1", lightcolor="#e9ebef", darkcolor="#e9ebef",
+                    focuscolor=C_BG, relief="flat", borderwidth=1)
+        s.map("TButton",
+              background=[("pressed", "#d8dbe0"), ("active", "#dfe2e7"),
+                          ("disabled", "#eef0f2")],
+              foreground=[("disabled", "#78808a")],
+              bordercolor=[("active", "#b9bdc4"), ("disabled", "#dfe1e4")])
+
+        # 主按钮：蓝底白字
+        s.configure("Primary.TButton",
+                    font=f(10, "bold"), padding=(18, 9),
+                    background=C_ACCENT, foreground="#ffffff",
+                    bordercolor=C_ACCENT, lightcolor=C_ACCENT, darkcolor=C_ACCENT,
+                    focuscolor=C_ACCENT, relief="flat", borderwidth=1)
+        s.map("Primary.TButton",
+              background=[("pressed", "#1e40af"), ("active", "#1d4ed8"),
+                          ("disabled", "#a9c0ee")],
+              foreground=[("disabled", "#eef3ff")],
+              bordercolor=[("pressed", "#1e40af"), ("active", "#1d4ed8")])
+
+        # 勾选框
+        s.configure("TCheckbutton", background=C_BG, foreground=C_TEXT,
+                    font=f(10), focuscolor=C_BG)
+        s.map("TCheckbutton",
+              background=[("active", C_BG)],
+              foreground=[("disabled", "#a8abb0")])
+
+        # 输入框
+        s.configure("TEntry", font=f(10), padding=5,
+                    fieldbackground="#ffffff", foreground=C_TEXT,
+                    bordercolor="#c9ccd1", lightcolor="#c9ccd1", darkcolor="#c9ccd1",
+                    insertcolor=C_TEXT)
+        s.map("TEntry",
+              bordercolor=[("focus", C_ACCENT)],
+              lightcolor=[("focus", C_ACCENT)],
+              darkcolor=[("focus", C_ACCENT)])
+        s.configure("TSpinbox", font=f(10), padding=4,
+                    fieldbackground="#ffffff", foreground=C_TEXT,
+                    bordercolor="#c9ccd1", arrowcolor=C_TEXT)
+
+        # 表格
         s.configure("Treeview",
                     font=f(10), rowheight=30,
                     background=C_CARD, fieldbackground=C_CARD, foreground=C_TEXT,
-                    borderwidth=0)
-        s.configure("Treeview.Heading", font=f(10, "bold"), padding=(6, 8))
-        s.map("Treeview", background=[("selected", "#dbeafe")],
+                    bordercolor="#e3e5e8", borderwidth=1, relief="flat")
+        s.map("Treeview",
+              background=[("selected", "#dbeafe")],
               foreground=[("selected", C_TEXT)])
-        s.map("Treeview.Heading", background=[("active", "#e8eaed")])
+        s.configure("Treeview.Heading",
+                    font=f(10, "bold"), padding=(8, 8),
+                    background="#eef0f3", foreground=C_TEXT,
+                    bordercolor="#e3e5e8", relief="flat")
+        s.map("Treeview.Heading",
+              background=[("active", "#e3e6ea")],
+              foreground=[("active", C_TEXT)])
 
-        s.configure("TProgressbar", thickness=16)
+        # 进度条
+        s.configure("TProgressbar", thickness=16,
+                    background=C_ACCENT, troughcolor="#e3e5e8",
+                    bordercolor="#e3e5e8", lightcolor=C_ACCENT, darkcolor=C_ACCENT)
 
-        # 主按钮配色（clam 主题支持）
-        try:
-            s.configure("Primary.TButton", background=C_ACCENT, foreground="#ffffff")
-            s.map("Primary.TButton",
-                  background=[("active", "#1d4ed8"), ("disabled", "#9db4e0")],
-                  foreground=[("disabled", "#eef2ff")])
-        except tk.TclError:
-            pass
+        # 滚动条
+        s.configure("TScrollbar", background="#d5d8dd", troughcolor=C_BG,
+                    bordercolor=C_BG, arrowcolor="#6b7280", relief="flat")
+        s.map("TScrollbar", background=[("active", "#bfc3c9")])
+
 
     # ---------------- 顶部：双行工具栏 ----------------
     def _toolbar(self):
