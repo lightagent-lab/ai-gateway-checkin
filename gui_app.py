@@ -186,6 +186,7 @@ class App:
         self._log()
 
         self.load()
+        self._fit_window()
         self.log(ufonts.status_text())
         self.log("账号文件: %s" % data_path("accounts.txt"))
         if not self.accounts:
@@ -200,12 +201,30 @@ class App:
         """按屏幕大小自适应，避免内容超出被裁切。"""
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
-        w = min(max(int(sw * 0.72), 900), 1180)
-        h = min(max(int(sh * 0.76), 620), 860)
-        x = max((sw - w) // 2, 0)
-        y = max((sh - h) // 3, 0)
-        self.root.geometry("%dx%d+%d+%d" % (w, h, x, y))
-        self.root.minsize(860, 580)
+        self._win_w = min(max(int(sw * 0.72), 900), 1180)
+        self._win_h = min(max(int(sh * 0.76), 620), 860)
+        self._screen = (sw, sh)
+        x = max((sw - self._win_w) // 2, 0)
+        y = max((sh - self._win_h) // 3, 0)
+        self.root.geometry("%dx%d+%d+%d" % (self._win_w, self._win_h, x, y))
+        self.root.minsize(760, 520)
+
+    def _fit_window(self):
+        """
+        关键：控件建好后，确保窗口不小于内容的请求尺寸。
+        否则 pack 布局会把靠后的控件压成 1x1 像素而完全看不见。
+        """
+        self.root.update_idletasks()
+        rw, rh = self.root.winfo_reqwidth(), self.root.winfo_reqheight()
+        sw, sh = self._screen
+        w = min(max(self._win_w, rw), sw)
+        h = min(max(self._win_h, rh), sh)
+        if (w, h) != (self._win_w, self._win_h):
+            self._win_w, self._win_h = w, h
+            x = max((sw - w) // 2, 0)
+            y = max((sh - h) // 3, 0)
+            self.root.geometry("%dx%d+%d+%d" % (w, h, x, y))
+        self.root.minsize(min(rw, sw), min(rh, sh))
 
     # ---------------- 样式 ----------------
     def _style(self):
@@ -671,7 +690,95 @@ class App:
         self.root.destroy()
 
 
+def layout_check():
+    """
+    布局自检：建一个真实窗口，测量所有控件，确认没有不可见/溢出的控件。
+    用于验证打包后的 exe 在真实 DPI 下界面正常。
+    """
+    import tkinter as tk
+    lines = []
+    ok = True
+
+    root = tk.Tk()
+    app = App(root)
+    root.update_idletasks()
+    root.update()
+
+    W, H = root.winfo_width(), root.winfo_height()
+    SW, SH = root.winfo_screenwidth(), root.winfo_screenheight()
+    lines.append("窗口: %dx%d | 屏幕: %dx%d" % (W, H, SW, SH))
+    lines.append("请求尺寸: %dx%d | tk scaling: %.3f"
+                 % (root.winfo_reqwidth(), root.winfo_reqheight(),
+                    root.tk.call("tk", "scaling")))
+
+    # 关键按钮
+    lines.append("")
+    lines.append("主操作按钮:")
+    for label, btn in (("一键签到", app.btn_run), ("仅查状态", app.btn_status),
+                       ("停止", app.btn_stop), ("添加账号", app.btn_add)):
+        x = btn.winfo_rootx() - root.winfo_rootx()
+        y = btn.winfo_rooty() - root.winfo_rooty()
+        w, h = btn.winfo_width(), btn.winfo_height()
+        good = w > 40 and h > 20 and x >= 0 and y >= 0 and x + w <= W and y + h <= H
+        if not good:
+            ok = False
+        lines.append("  %-10s pos=(%4d,%4d) size=%3dx%-3d  %s"
+                     % (label, x, y, w, h, "OK" if good else "异常!"))
+
+    # 扫描 1x1 控件
+    bad = []
+
+    def walk(w):
+        for ch in w.winfo_children():
+            cw, chh = ch.winfo_width(), ch.winfo_height()
+            if ch.winfo_manager() and (cw <= 1 or chh <= 1):
+                t = ""
+                try:
+                    t = str(ch.cget("text"))[:18]
+                except Exception:
+                    pass
+                bad.append("%s %r %dx%d" % (ch.winfo_class(), t, cw, chh))
+            walk(ch)
+
+    walk(root)
+    lines.append("")
+    if bad:
+        ok = False
+        lines.append("发现不可见控件:")
+        for b in bad:
+            lines.append("  !! " + b)
+    else:
+        lines.append("没有不可见控件")
+
+    lines.append("")
+    lines.append("结论: %s" % ("布局正常" if ok else "布局有问题"))
+    root.destroy()
+
+    text = "\n".join(lines)
+    try:
+        print(text)
+    except Exception:
+        pass
+    try:
+        base = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else HERE
+        with open(os.path.join(base, "layout.log"), "w", encoding="utf-8") as fh:
+            fh.write(text + "\n")
+    except Exception:
+        pass
+    return ok
+
 def main():
+    # 布局自检：验证界面控件尺寸与位置
+    if "--layout" in sys.argv:
+        try:
+            import ctypes
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except Exception:
+            pass
+        ufonts.preload_font_file()
+        layout_check()
+        return 0
+
     try:
         from uc.selftest import handle_cli
         if handle_cli(sys.argv[1:]):
