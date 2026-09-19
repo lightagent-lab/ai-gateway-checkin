@@ -37,3 +37,7 @@ assets/*.ttc
 *.exe
 ai-gateway-checkin.exe
 AI签到助手.exe
+
+# 调试用对比截图
+cmp_*.png
+btn_*.png
