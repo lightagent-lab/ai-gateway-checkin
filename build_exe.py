@@ -28,7 +28,7 @@ def main():
         print("打包失败")
         return 1
 
-    exe = os.path.join(HERE, "dist", "AI签到助手.exe")
+    exe = os.path.join(HERE, "dist", "ai-gateway-checkin.exe")
     if not os.path.exists(exe):
         print("未找到产物，打包可能失败")
         return 1
@@ -40,7 +40,7 @@ def main():
     print("文件大小: %.1f MB" % size)
     print("=" * 56)
     print()
-    print("自检命令: dist\\AI签到助手.exe --selftest")
+    print("自检命令: dist\\ai-gateway-checkin.exe --selftest")
     return 0
 
 

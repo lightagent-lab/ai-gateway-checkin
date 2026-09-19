@@ -11,7 +11,7 @@
 
 ### 方式一：下载 exe（推荐）
 
-1. 到 [Releases](https://github.com/) 下载 `AI签到助手.exe`
+1. 到 [Releases](https://github.com/lightagent-lab/ai-gateway-checkin/releases/latest) 下载 `ai-gateway-checkin.exe`
 2. 双击运行
 3. 点「＋ 添加账号」，填站点地址 + 账号密码
 4. 点「一键签到」
@@ -85,7 +85,7 @@ https://other.com    user2           pass2       小号B  http://127.0.0.1:7890
 ```bash
 pip install pyinstaller
 python build_exe.py
-# 产物：dist/AI签到助手.exe
+# 产物：dist/ai-gateway-checkin.exe
 ```
 
 ## 自检与排障
@@ -93,9 +93,9 @@ python build_exe.py
 打包后或运行异常时，可以用自检模式确认环境：
 
 ```bash
-AI签到助手.exe --selftest                    # 检查依赖 + 网络 + 识别默认站点
-AI签到助手.exe --detect https://example.com  # 检测指定站点
-AI签到助手.exe --version                     # 显示版本
+ai-gateway-checkin.exe --selftest                    # 检查依赖 + 网络 + 识别默认站点
+ai-gateway-checkin.exe --detect https://example.com  # 检测指定站点
+ai-gateway-checkin.exe --version                     # 显示版本
 ```
 
 自检结果也会写入同目录的 `selftest.log`。

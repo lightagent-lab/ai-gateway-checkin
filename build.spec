@@ -42,7 +42,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name="AI签到助手",
+    name="ai-gateway-checkin",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

@@ -109,7 +109,7 @@ def handle_cli(argv):
         i = argv.index("--detect")
         target = argv[i + 1] if i + 1 < len(argv) else ""
         if not target:
-            _out(["用法: AI签到助手.exe --detect https://example.com"])
+            _out(["用法: ai-gateway-checkin.exe --detect https://example.com"])
             return True
         try:
             from uc.sites import detect, make_session
