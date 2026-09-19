@@ -32,3 +32,8 @@ tests/.dbg.json
 assets/*.otf
 assets/*.ttf
 assets/*.ttc
+
+# 本地打包的 exe（含专有字体，不入库）
+*.exe
+ai-gateway-checkin.exe
+AI签到助手.exe
