@@ -55,10 +55,28 @@ def selftest(target="https://ai.88wk.org"):
         from uc.client import SiteClient
         from uc.runner import Runner, summarize
         from uc.store import Account, TokenStore
+        from uc import fonts as ufonts
         lines.append("    uc.* 全部导入 OK")
     except Exception:
         ok = False
         lines.append("    导入失败:\n" + traceback.format_exc())
+
+    lines.append("[3b] 字体")
+    try:
+        from uc import fonts as ufonts
+        ufonts.preload_font_file()
+        import tkinter as tk
+        _r = tk.Tk()
+        _r.withdraw()
+        fam = ufonts.resolve_family()
+        lines.append("    使用字体: %s" % fam)
+        if ufonts.font_available():
+            lines.append("    苹方字体: 可用")
+        else:
+            lines.append("    苹方字体: 未找到，已回退到系统字体（不影响使用）")
+        _r.destroy()
+    except Exception as exc:
+        lines.append("    字体检测跳过: %s" % exc)
 
     lines.append("[4] 网络与站点识别 (%s)" % target)
     try:

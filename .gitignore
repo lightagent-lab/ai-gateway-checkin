@@ -27,3 +27,8 @@ tests/.dbg.json
 .idea/
 *.swp
 .DS_Store
+
+# 专有字体（苹方为 Apple 字体，请勿公开分发）
+assets/*.otf
+assets/*.ttf
+assets/*.ttc

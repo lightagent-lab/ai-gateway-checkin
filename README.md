@@ -112,11 +112,14 @@ ai-gateway-checkin/
 │   ├── runner.py         # 批量执行引擎
 │   ├── store.py          # 账号模型 + token 缓存
 │   ├── crypto_util.py    # new-api RSA 密码加密登录
+│   ├── fonts.py          # 字体加载与选择
 │   └── selftest.py       # 自检
 ├── tests/
 │   ├── mock_site.py      # 模拟两类家族的测试服务器
 │   ├── test_e2e.py       # 端到端测试
-│   └── test_gui.py       # 界面测试
+│   ├── test_gui.py       # 界面功能测试
+│   └── test_layout.py    # 布局回归测试
+├── assets/               # 字体存放目录（不入库）
 ├── build.spec            # PyInstaller 配置
 ├── build_exe.py          # 一键打包脚本
 └── requirements.txt
@@ -139,7 +142,34 @@ python tests/mock_site.py 8902 sub2api
 # 终端 2：跑测试
 python tests/test_e2e.py     # 29 项端到端检查
 python tests/test_gui.py     # 12 项界面检查
+python tests/test_layout.py  # 18 项布局检查
 ```
+
+## 字体
+
+界面默认使用 **苹方（PingFang SC）**，找不到时自动回退到系统字体，不影响使用。
+
+查找顺序：
+
+1. `assets/PingFangSC-Semibold.otf`（程序同目录）
+2. 打包进 exe 的字体资源
+3. 常见下载目录（如 `~/Downloads/Telegram Desktop/`）
+4. 系统已安装的同类字体（微软雅黑 → 思源黑体 → 黑体 → 宋体）
+
+想自定义字体，把 OTF/TTF 放到程序同目录的 `assets/` 下并命名为
+`PingFangSC-Semibold.otf` 即可。程序会用 `AddFontResourceEx(FR_PRIVATE)`
+私有加载，不会影响系统字体设置。
+
+> **注意**：苹方是 Apple 的专有字体，本仓库**不包含**该字体文件。
+> 请自行确认你有权使用，且不要把含该字体的构建产物公开分发。
+
+## 关于界面尺寸
+
+界面按屏幕分辨率自适应（宽度取屏幕 72%，高度 76%），并有最小尺寸保护。
+所有主要按钮都保证有足够空间，不会出现按钮被挤没的情况。
+
+`tests/test_layout.py` 会在真实窗口中测量每个控件的实际尺寸，
+确保没有 1×1 的不可点击控件、没有超出窗口的区域。
 
 ## 免责声明
 
